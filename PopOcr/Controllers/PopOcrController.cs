@@ -7,14 +7,9 @@ namespace PopOcr.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PopOcrController : ControllerBase
+    public class PopOcrController(IOcrService ocrService) : ControllerBase
     {
-        private readonly IOcrService _ocrService;
-
-        public PopOcrController(IOcrService ocrService)
-        {
-            _ocrService = ocrService;
-        }
+        private readonly IOcrService _ocrService = ocrService;
 
         [HttpPost("extract-text")]
         public async Task<ActionResult<OcrResults>> ExtractText(IFormFile file)
@@ -26,11 +21,9 @@ namespace PopOcr.Controllers
                     return BadRequest("No file uploaded.");
                 }
 
-                using (var stream = file.OpenReadStream())
-                {
-                    var ocrResult = await _ocrService.ExtractTextAsync(stream);
-                    return Ok(new { Text = ocrResult.Text });
-                }
+                using var stream = file.OpenReadStream();
+                var ocrResult = await _ocrService.ExtractTextAsync(stream);
+                return Ok(new { ocrResult.Text });
             }
             catch (Exception ex)
             {
