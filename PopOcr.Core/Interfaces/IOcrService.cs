@@ -9,6 +9,6 @@ namespace PopOcr.Core.Interfaces
 {
     public interface IOcrService
     {
-        Task<OcrResult> ExtractTextAsync(Stream imageStream);
+        Task<OcrResults> ExtractTextAsync(Stream imageStream);
     }
 }

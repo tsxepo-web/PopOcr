@@ -1,4 +1,7 @@
-﻿using PopOcr.Core.Entities;
+﻿using Azure.AI.Vision.ImageAnalysis;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using PopOcr.Core.Entities;
 using PopOcr.Core.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,21 +15,28 @@ namespace PopOcr.Infrastructure.Services
     {
         private readonly string _endpoint;
         private readonly string _apiKey;
-        private readonly ComputerVisionClient _client;
+        private readonly ImageAnalysisClient _client;
 
         public OcrService(string endpoint, string apiKey)
         {
             _endpoint = endpoint;
             _apiKey = apiKey;
-            _client = new ComputerVisionClient(new ApiKeyServiceClientCredentials(_apiKey))
+            _client = new ImageAnalysisClient(new Uri(_endpoint), new Azure.AzureKeyCredential(_apiKey));
+        }
+        public async Task<OcrResults> ExtractTextAsync(Stream imageStream)
+        {
+            ImageAnalysisResult result = await _client.AnalyzeAsync(
+                BinaryData.FromStream(imageStream),
+                VisualFeatures.Read);
+
+            if (result.Read == null || !result.Read.Blocks.Any())
             {
-                Endpoint = _endpoint
-            };
+                throw new Exception($"No text found in the image");
+            }
+
+            var text = string.Join(" ", result.Read.Blocks.SelectMany(block => block.Lines).Select(line => line.Text));
+            return new OcrResults { Text = text };
         }
 
-        public async Task<OcrResult> ExtractTextAsync(Stream imageStream)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

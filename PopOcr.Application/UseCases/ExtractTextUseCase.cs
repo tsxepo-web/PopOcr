@@ -16,7 +16,7 @@ namespace PopOcr.Application.UseCases
             _ocrService = ocrService;
         }
 
-        public async Task<OcrResult> ExecuteAsync(Stream imageStream)
+        public async Task<OcrResults> ExecuteAsync(Stream imageStream)
         {
             return await _ocrService.ExtractTextAsync(imageStream);
         }

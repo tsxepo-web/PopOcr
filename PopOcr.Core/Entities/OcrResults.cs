@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PopOcr.Core.Entities
 {
-    public class OcrResult
+    public class OcrResults
     {
         public string? Text { get; set; }
     }

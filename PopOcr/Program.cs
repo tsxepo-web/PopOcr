@@ -1,19 +1,34 @@
+using Microsoft.OpenApi.Models;
+using PopOcr.Core.Interfaces;
+using PopOcr.Infrastructure.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "OCR API", Version = "v1" });
+});
+
+var endpoint = builder.Configuration["PopOcr:Azure_Endpoint"];
+var apiKey = builder.Configuration["PopOcr:Azure_ApiKey"];
+if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
+{
+    throw new InvalidOperationException("Azure Cognitive Services endpoint and API key must be set.");
+}
+
+builder.Services.AddScoped<IOcrService>(sp => new OcrService(endpoint, apiKey));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OCR API V1");
+    });
 }
 
 app.UseHttpsRedirection();
