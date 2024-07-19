@@ -19,6 +19,7 @@ if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
 }
 
 builder.Services.AddScoped<IOcrService>(sp => new OcrService(endpoint, apiKey));
+builder.Services.AddScoped<IDocumentAnalysisService>(sp => new DocumentAnalysisService(endpoint, apiKey));
 
 var app = builder.Build();
 
