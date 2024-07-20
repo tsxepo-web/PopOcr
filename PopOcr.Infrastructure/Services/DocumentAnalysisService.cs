@@ -23,7 +23,7 @@ namespace PopOcr.Infrastructure.Services
 
         public async Task<DocumentAnalysisResult> AnalyseDocumentAsync(string uriSource)
         {
-            Uri uri = new Uri(uriSource);
+            Uri uri = new(uriSource);
             var content = new AnalyzeDocumentContent() { UrlSource = uri };
 
             Operation<AnalyzeResult> operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", content);
@@ -44,58 +44,52 @@ namespace PopOcr.Infrastructure.Services
             Operation<AnalyzeResult> operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", content);
             return ConvertResult(operation.Value);
         }
-        private  DocumentAnalysisResult ConvertResult(AnalyzeResult result)
+        private DocumentAnalysisResult ConvertResult(AnalyzeResult result)
         {
-            var analysisResult = new DocumentAnalysisResult
+            var documentAnalysisResult = new DocumentAnalysisResult
             {
-                Pages = result.Pages.Select(page => new AnalyzeDocumentPage
+                Pages = result.Pages.Select(page => new ExtractedPage
                 {
                     PageNumber = page.PageNumber,
-                    Lines = page.Lines.Select(line => new AnalyzeDocumentLine
+                    Lines = page.Lines.Select(line => new ExtractedLine
                     {
                         Content = line.Content,
-                        Polygon = line.Polygon.ToList()
+                        BoundingPolygon = [.. line.Polygon]
                     }).ToList(),
-                    SelectionMarks = page.SelectionMarks.Select(selectionMark => new AnalyzeDocumentSelectionMark
+                    SelectionMarks = page.SelectionMarks.Select(selectionMark => new ExtractedSelectionMark
                     {
                         State = selectionMark.State.ToString(),
-                        Polygon = selectionMark.Polygon.ToList()
-                    }).ToList(),
-                    Words = page.Words.Select(word => new AnalyzeDocumentWord
-                    {
-                        Content = word.Content
+                        BoundingPolygon = [.. selectionMark.Polygon]
                     }).ToList()
                 }).ToList(),
-                Paragraphs = result.Paragraphs.Select(paragraph => new AnalyzeDocumentParagraph
-                {
-                    Content = paragraph.Content,
-                    Role = paragraph.Role.ToString()
-                }).ToList(),
-                Styles = result.Styles.Select(style => new AnalyzeDocumentStyle
+
+                Styles = result.Styles.Select(style => new ExtractedStyle
                 {
                     IsHandwritten = style.IsHandwritten,
-                    Confidence = style.Confidence,
-                    Spans = style.Spans.Select(span => new AnalyzeDocumentSpan
+                    Confidence = style.Confidence,  
+                    Spans = style.Spans.Select(span => new ExtractedSpan
                     {
-                        Offset = span.Offset,
-                        Length = span.Length
-                    }).ToList()
+                        Index = span.Offset,
+                        Length = span.Length,
+                        Content = result.Content,
+                    }).ToList(),    
                 }).ToList(),
-                Tables = result.Tables.Select(table => new AnalyzeDocumentTable
+
+                Tables = result.Tables.Select(table => new ExtractedTable
                 {
                     RowCount = table.RowCount,
                     ColumnCount = table.ColumnCount,
-                    Cells = table.Cells.Select(cell => new AnalyzeDocumentTableCell
+                    Cells = table.Cells.Select(cell => new TableCell
                     {
+                        Content = cell.Content,
                         RowIndex = cell.RowIndex,
                         ColumnIndex = cell.ColumnIndex,
-                        Kind = cell.Kind.ToString(),
-                        Content = cell.Content
+                        Kind = cell.Kind.ToString()
                     }).ToList()
-                }).ToList()
+                }).ToList(),
             };
+            return documentAnalysisResult;
             
-            return analysisResult;
         }
     }
 }
