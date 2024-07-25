@@ -48,45 +48,96 @@ namespace PopOcr.Infrastructure.Services
         {
             var documentAnalysisResult = new DocumentAnalysisResult
             {
-                Pages = result.Pages.Select(page => new ExtractedPage
+                AnalyzeResult = new AnalyzeResultInfo
                 {
-                    PageNumber = page.PageNumber,
-                    Lines = page.Lines.Select(line => new ExtractedLine
+                    ApiVersion = result.ApiVersion,
+                    ModelId = result.ModelId,
+                    StringIndexType = result.StringIndexType.ToString(),
+                    Content = result.Content,
+                    Pages = result.Pages.Select(page => new ExtractedPage
                     {
-                        Content = line.Content,
-                        BoundingPolygon = [.. line.Polygon]
+                        PageNumber = page.PageNumber,
+                        Angle = page.Angle,
+                        Width = page.Width,
+                        Height = page.Height,
+                        Unit = page.Unit.ToString(),
+                        Words = page.Words.Select(word => new ExtractedWord
+                        {
+                            Content = word.Content,
+                            Polygon = (List<float>)word.Polygon,
+                            Confidence = word.Confidence,
+                            Span = new ExtractedSpan
+                            {
+                                Offset = word.Span.Offset,
+                                Length = word.Span.Length
+                            }
+                        }).ToList()
                     }).ToList(),
-                    SelectionMarks = page.SelectionMarks.Select(selectionMark => new ExtractedSelectionMark
-                    {
-                        State = selectionMark.State.ToString(),
-                        BoundingPolygon = [.. selectionMark.Polygon]
-                    }).ToList()
-                }).ToList(),
 
-                Styles = result.Styles.Select(style => new ExtractedStyle
-                {
-                    IsHandwritten = style.IsHandwritten,
-                    Confidence = style.Confidence,  
-                    Spans = style.Spans.Select(span => new ExtractedSpan
+                    Tables = result.Tables?.Select(table => new ExtractedTable
                     {
-                        Index = span.Offset,
-                        Length = span.Length,
-                        Content = result.Content,
-                    }).ToList(),    
-                }).ToList(),
-
-                Tables = result.Tables.Select(table => new ExtractedTable
-                {
-                    RowCount = table.RowCount,
-                    ColumnCount = table.ColumnCount,
-                    Cells = table.Cells.Select(cell => new TableCell
+                        RowCount = table.RowCount,
+                        ColumnCount = table.ColumnCount,    
+                        Cells = table.Cells.Select(cell => new ExtractedTableCell
+                        {
+                            Kind = cell.Kind.ToString(),
+                            RowIndex = cell.RowIndex,
+                            ColumnIndex = cell.ColumnIndex,
+                            Content = cell.Content,
+                            BoundingRegions = cell.BoundingRegions?.Select(br => new ExtractedBoundingRegion
+                            {
+                                PageNumber = br.PageNumber,
+                                Polygon = (List<float>)br.Polygon,
+                            }).ToList(),
+                            Spans = cell.Spans.Select(span => new ExtractedSpan
+                            {
+                                Offset = span.Offset,
+                                Length = span.Length
+                            }).ToList(),
+                            Elements = (List<string>)cell.Elements
+                        }).ToList(),
+                        BoundingRegions = table.BoundingRegions.Select(br => new ExtractedBoundingRegion
+                        {
+                            PageNumber= br.PageNumber,
+                            Polygon= (List<float>)br.Polygon,
+                        }).ToList(),
+                        Spans = table.Spans.Select(span => new ExtractedSpan
+                        {
+                            Offset= span.Offset,
+                            Length = span.Length,
+                        }).ToList(),
+                        Caption = table.Caption != null ? new ExtractedTableCaption
+                        {
+                            Content = table.Caption.Content,
+                            BoundingRegions = table.Caption.BoundingRegions.Select(br => new ExtractedBoundingRegion
+                            {
+                                PageNumber = br.PageNumber,
+                                Polygon = (List<float>)br.Polygon,
+                            }).ToList(),
+                            Spans = table.Caption.Spans.Select(span => new ExtractedSpan
+                            {
+                                Offset = span.Offset,
+                                Length = span.Length,
+                            }).ToList(),
+                            Elements = (List<string>)table.Caption.Elements
+                        } : null
+                    }).ToList(),
+                    Paragraphs = result.Paragraphs.Select(paragraph => new ExtactedParagraph
                     {
-                        Content = cell.Content,
-                        RowIndex = cell.RowIndex,
-                        ColumnIndex = cell.ColumnIndex,
-                        Kind = cell.Kind.ToString()
-                    }).ToList()
-                }).ToList(),
+                        Role = paragraph.Role.ToString(),
+                        Content = paragraph.Content,
+                        Spans = paragraph.Spans.Select(span => new ExtractedSpan
+                        {
+                            Offset = span.Offset,
+                            Length = span.Length,
+                        }).ToList(),
+                        BoundingRegions = paragraph.BoundingRegions.Select(br => new ExtractedBoundingRegion
+                        {
+                            PageNumber= br.PageNumber,
+                            Polygon = (List<float>)br.Polygon
+                        }).ToList(),
+                    }).ToList(),
+                }
             };
             return documentAnalysisResult;
             
