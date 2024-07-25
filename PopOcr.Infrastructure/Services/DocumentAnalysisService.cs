@@ -137,6 +137,45 @@ namespace PopOcr.Infrastructure.Services
                             Polygon = (List<float>)br.Polygon
                         }).ToList(),
                     }).ToList(),
+                    Sections = result.Sections.Select(section => new ExtractedSection
+                    {
+                        Spans = section.Spans.Select(span => new ExtractedSpan
+                        {
+                            Offset = span.Offset,
+                            Length = span.Length,
+                        }).ToList(),
+                        Elements = (List<string>)section.Elements
+                    }).ToList(),
+                    Figures = result.Figures.Select(figure => new ExtractedFigure
+                    {
+                        Id = figure.ToString(),
+                        BoundingRegions = figure.BoundingRegions.Select(br => new ExtractedBoundingRegion
+                        {
+                            PageNumber = br.PageNumber,
+                            Polygon = (List<float>)br.Polygon
+                        }).ToList(),
+                        Spans = figure.Spans.Select(span => new ExtractedSpan
+                        {
+                            Offset= span.Offset,
+                            Length = span.Length,
+                        }).ToList(),
+                        Elements = (List<string>)figure.Elements,
+                        Caption = figure.Caption != null ? new ExtractedFigureCaption
+                        {
+                            Content = figure.Caption.Content,
+                            BoundingRegions = figure.Caption.BoundingRegions.Select(br => new ExtractedBoundingRegion
+                            {
+                                PageNumber = br.PageNumber,
+                                Polygon= (List<float>)br.Polygon
+                            }).ToList(),
+                            Spans = figure.Caption.Spans.Select(span => new ExtractedSpan
+                            {
+                                Offset = span.Offset,
+                                Length = span.Length,
+                            }).ToList(),
+                            Elements = (List<string>)figure.Caption.Elements
+                        } : null
+                    }).ToList()
                 }
             };
             return documentAnalysisResult;

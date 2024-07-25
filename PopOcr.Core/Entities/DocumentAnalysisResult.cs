@@ -22,6 +22,8 @@ public class AnalyzeResultInfo
     public List<ExtractedPage>? Pages { get; set; }
     public List<ExtractedTable>? Tables { get; set; }
     public List<ExtactedParagraph>? Paragraphs { get; set; }
+    public List<ExtractedSection>? Sections { get; set; }
+    public List<ExtractedFigure>? Figures { get; set; }
 }
 
 public class ExtractedPage
@@ -109,4 +111,27 @@ public class ExtactedParagraph
     public string? Content { get; set; }
     public List<ExtractedSpan>? Spans { get; set; }
     public List<ExtractedBoundingRegion>? BoundingRegions { get; set; }
+}
+
+public class ExtractedSection
+{
+    public List<ExtractedSpan>? Spans { get; set; }
+    public List<string>? Elements { get; set; }
+}
+
+public class ExtractedFigure
+{
+    public string? Id { get; set; }
+    public List<ExtractedBoundingRegion>? BoundingRegions { get; set; }
+    public List<ExtractedSpan>? Spans { get; set; }
+    public List<string>? Elements { get; set; }
+    public ExtractedFigureCaption? Caption { get; set; }
+}
+
+public class ExtractedFigureCaption
+{
+    public string? Content { get; set; }
+    public List<ExtractedBoundingRegion>? BoundingRegions { get; set; }
+    public List<ExtractedSpan>? Spans { get; set; }
+    public List<string>? Elements { get; set; }
 }
