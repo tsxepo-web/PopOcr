@@ -10,7 +10,7 @@ namespace PopOcr.Core.Interfaces
     public interface IReceiptAnalysisService
     {
 
-        Task<ReceiptAnalysis> AnalyseReceiptAsync(string uriSource);
-        Task<ReceiptAnalysis> AnalyzeReceiptAsync(Stream imageStream);
+        Task<ReceiptAnalysisResult> AnalyseReceiptAsync(string uriSource);
+        Task<ReceiptAnalysisResult> AnalyzeReceiptAsync(Stream imageStream);
     }
 }

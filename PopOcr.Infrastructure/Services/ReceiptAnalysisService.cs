@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PopOcr.Core.Interfaces;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
+using System.Reflection.Metadata;
 
 namespace PopOcr.Infrastructure.Services
 {
@@ -23,7 +25,7 @@ namespace PopOcr.Infrastructure.Services
             _client = new DocumentIntelligenceClient(new Uri(_endpoint), new AzureKeyCredential(_apiKey));
         }
 
-        public async Task<ReceiptAnalysis> AnalyseReceiptAsync(string uriSource)
+        public async Task<ReceiptAnalysisResult> AnalyseReceiptAsync(string uriSource)
         {
             Uri uri = new(uriSource);
             var content = new AnalyzeDocumentContent() { UrlSource = uri };
@@ -32,7 +34,7 @@ namespace PopOcr.Infrastructure.Services
             return ConvertResult(operation.Value);
         }
 
-        public async Task<ReceiptAnalysis> AnalyzeReceiptAsync(Stream imageStream)
+        public async Task<ReceiptAnalysisResult> AnalyzeReceiptAsync(Stream imageStream)
         {
             byte[] byteArray;
             using (var memoryStream = new MemoryStream())
@@ -47,39 +49,69 @@ namespace PopOcr.Infrastructure.Services
             return ConvertResult(operation.Value);
         }
 
-        private ReceiptAnalysis ConvertResult(AnalyzeResult analyzeResult)
+        private ReceiptAnalysisResult ConvertResult(AnalyzeResult analyzeResult)
         {
-            var customResult = new ReceiptAnalysis
+            var analyzeResultInfo = new ReceiptAnalyzeResultInfo
             {
-                AnalyzeResult = new ReceiptAnalyzeResultInfo
+                ApiVersion = analyzeResult.ApiVersion,
+                ModelId = analyzeResult.ModelId,
+                StringIndexType = analyzeResult.StringIndexType.ToString(),
+                Content = analyzeResult.Content,
+                Pages = analyzeResult.Pages?.Select(page => new ReceiptPage
                 {
-                    ApiVersion = analyzeResult.ApiVersion?.ToString(),
-                    ModelId = analyzeResult.ModelId,
-                    StringIndexType = analyzeResult.StringIndexType.ToString(),
-                    Content = analyzeResult.Content,
-                    Pages = analyzeResult.Pages?.Select(page => new ReceiptPage
+                    PageNumber = page.PageNumber,
+                    Angle = page.Angle,
+                    Width = page.Width,
+                    Height = page.Height,
+                    Unit = page.Unit.ToString(),
+                    Words = page.Words?.Select(word => new ReceiptWord
                     {
-                        PageNumber = page.PageNumber,
-                        Angle = page.Angle,
-                        Width = page.Width,
-                        Height = page.Height,
-                        Unit = page.Unit.ToString(),
-                        Words = page.Words?.Select(word => new ReceiptWord
+                        Content = word.Content,
+                        Polygon = word.Polygon?.ToList(),
+                        Confidence = word.Confidence,
+                        Span = word.Span != null ? new ReceiptSpan
                         {
-                            Content = word.Content,
-                            Polygon = (List<float>)word.Polygon,
-                            Confidence = word.Confidence,
-                            Span = new ReceiptSpan
-                            {
-                                Offset = word.Span.Offset,
-                                Length = word.Span.Length
-                            }
+                            Offset = word.Span.Offset,
+                            Length = word.Span.Length
+                        } : null
+                    }).ToList(),
+                    Lines = page.Lines?.Select(line => new ReceiptLine
+                    {
+                        Content = line.Content,
+                        Polygon = line.Polygon?.ToList(),
+                        Spans = line.Spans?.Select(span => new ReceiptSpan
+                        {
+                            Offset = span.Offset,
+                            Length = span.Length
                         }).ToList()
+                    }).ToList(),
+                    Spans = page.Spans?.Select(span => new ReceiptSpan
+                    {
+                        Offset = span.Offset,
+                        Length = span.Length
                     }).ToList()
-                }
+                }).ToList(),
+
+                Styles = analyzeResult.Styles?.Select(style => new ReceiptStyle
+                {
+                    Confidence = style.Confidence,
+                    Spans = style.Spans?.Select(span => new ReceiptSpan
+                    {
+                        Offset = span.Offset,
+                        Length = span.Length
+                    }).ToList(),
+                    IsHandwritten = style.IsHandwritten
+                }).ToList(),
+                ContentFormat = analyzeResult.ContentFormat.ToString() 
             };
 
-            return customResult;
-        }
-    }
+        var receiptAnalysisResult = new ReceiptAnalysisResult
+        {
+            AnalyzeResult = analyzeResultInfo
+        };
+
+    return receiptAnalysisResult;
+}
+
+}
 }
