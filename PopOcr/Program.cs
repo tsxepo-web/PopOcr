@@ -18,7 +18,14 @@ if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
     throw new InvalidOperationException("Azure Cognitive Services endpoint and API key must be set.");
 }
 
-builder.Services.AddScoped<IOcrService>(sp => new OcrService(endpoint, apiKey));
+var cvKey = builder.Configuration["PopOcr:AzureCv_Key"];
+var cvEndpoint = builder.Configuration["PopOcr:AzureCv_Endpoint"];
+if (string.IsNullOrEmpty(cvEndpoint) || string.IsNullOrEmpty(cvKey))
+{
+    throw new InvalidOperationException("Azure Computer Vision endpoint and API key must be set.");
+}
+
+builder.Services.AddScoped<IOcrService>(sp => new OcrService(cvEndpoint, cvKey));
 builder.Services.AddScoped<IDocumentAnalysisService>(sp => new DocumentAnalysisService(endpoint, apiKey));
 builder.Services.AddScoped<IReceiptAnalysisService>(sp => new ReceiptAnalysisService(endpoint, apiKey));
 
