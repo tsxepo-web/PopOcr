@@ -102,16 +102,16 @@ namespace PopOcr.Infrastructure.Services
                     }).ToList(),
                     IsHandwritten = style.IsHandwritten
                 }).ToList(),
-                ContentFormat = analyzeResult.ContentFormat.ToString() 
+                ContentFormat = analyzeResult.ContentFormat.ToString()
             };
 
-        var receiptAnalysisResult = new ReceiptAnalysisResult
-        {
-            AnalyzeResult = analyzeResultInfo
-        };
+            var receiptAnalysisResult = new ReceiptAnalysisResult
+            {
+                AnalyzeResult = analyzeResultInfo
+            };
 
-    return receiptAnalysisResult;
-}
+            return receiptAnalysisResult;
+        }
 
-}
+    }
 }
