@@ -68,7 +68,7 @@ namespace PopOcr.Controllers
         }
 
         [HttpPost("save-tables-to-excel")]
-        public async Task<IActionResult> SaveTablesToExcel([FromBody] List<List<string>> tables)
+        public async Task<IActionResult> SaveTablesToExcel([FromBody] List<ExtractedTable> tables)
         {
             var fileBytes = await _documentAnalysisService.SaveTablesToExcelAsync(tables);
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "extractedTables.xlsx");

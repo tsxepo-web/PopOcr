@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PopOcr.Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,6 @@ namespace PopOcr.Core.Interfaces
     public interface IFileGenerationService
     {
         Task<byte[]> SaveTextToWordAsync(string text);
-        Task<byte[]> SaveTablesToExcelAsync(List<List<string>> tables);
+        Task<byte[]> SaveTablesToExcelAsync(List<ExtractedTable> tables);
     }
 }

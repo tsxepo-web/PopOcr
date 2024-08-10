@@ -163,7 +163,7 @@ namespace PopOcr.Infrastructure.Services
             return await _fileGenerationService.SaveTextToWordAsync(extractedText);
         }
 
-        public async Task<byte[]> SaveTablesToExcelAsync(List<List<string>> tables)
+        public async Task<byte[]> SaveTablesToExcelAsync(List<ExtractedTable> tables)
         {
             return await _fileGenerationService.SaveTablesToExcelAsync(tables);
         }
