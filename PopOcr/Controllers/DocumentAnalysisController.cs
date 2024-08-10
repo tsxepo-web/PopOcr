@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PopOcr.Core.Entities;
 using PopOcr.Core.Interfaces;
+using PopOcr.Infrastructure.Services;
 
 namespace PopOcr.Controllers
 {
@@ -57,6 +58,20 @@ namespace PopOcr.Controllers
         public class AnalyzeDocumentRequest
         {
             public required string UriSource { get; set; }
+        }
+
+        [HttpPost("save-text-to-word")]
+        public async Task<IActionResult> SaveTextToWord([FromBody] string text)
+        {
+            var fileBytes = await _documentAnalysisService.SaveExtractedTextToWordAsync(text);
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "extractedText.docx");
+        }
+
+        [HttpPost("save-tables-to-excel")]
+        public async Task<IActionResult> SaveTablesToExcel([FromBody] List<List<string>> tables)
+        {
+            var fileBytes = await _documentAnalysisService.SaveTablesToExcelAsync(tables);
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "extractedTables.xlsx");
         }
     }
 }

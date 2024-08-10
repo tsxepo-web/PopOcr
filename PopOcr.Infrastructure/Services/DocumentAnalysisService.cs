@@ -13,36 +13,14 @@ namespace PopOcr.Infrastructure.Services
         private readonly string _endpoint;
         private readonly string _apiKey;
         private readonly DocumentIntelligenceClient _client;
+        private readonly IFileGenerationService _fileGenerationService;
 
-        public DocumentAnalysisService(string endpoint, string apiKey)
+        public DocumentAnalysisService(string endpoint, string apiKey, IFileGenerationService fileGenerationService)
         {
             _endpoint = endpoint;
             _apiKey = apiKey;
             _client = new DocumentIntelligenceClient(new Uri(_endpoint), new AzureKeyCredential(_apiKey));
-        }
-
-        public async Task<DocumentAnalysisResult> AnalyseDocumentAsync(string uriSource)
-        {
-            Uri uri = new(uriSource);
-            var content = new AnalyzeDocumentContent() { UrlSource = uri };
-
-            Operation<AnalyzeResult> operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", content);
-            return ConvertResult(operation.Value);
-        }
-
-        public async Task<DocumentAnalysisResult> AnalyzeDocumentAsync(Stream imageStream)
-        {
-            byte[] byteArray;
-            using (var memoryStream = new MemoryStream())
-            {
-                await imageStream.CopyToAsync(memoryStream);
-                byteArray = memoryStream.ToArray();
-            }
-
-            BinaryData data = new(byteArray);
-            var content = new AnalyzeDocumentContent() { Base64Source = data };
-            Operation<AnalyzeResult> operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", content);
-            return ConvertResult(operation.Value);
+            _fileGenerationService = fileGenerationService;
         }
         private DocumentAnalysisResult ConvertResult(AnalyzeResult result)
         {
@@ -178,8 +156,40 @@ namespace PopOcr.Infrastructure.Services
                     }).ToList()
                 }
             };
-            return documentAnalysisResult;
-            
+            return documentAnalysisResult;   
+        }
+        public async Task<byte[]> SaveExtractedTextToWordAsync(string extractedText)
+        {
+            return await _fileGenerationService.SaveTextToWordAsync(extractedText);
+        }
+
+        public async Task<byte[]> SaveTablesToExcelAsync(List<List<string>> tables)
+        {
+            return await _fileGenerationService.SaveTablesToExcelAsync(tables);
+        }
+
+        public async Task<DocumentAnalysisResult> AnalyseDocumentAsync(string uriSource)
+        {
+            Uri uri = new(uriSource);
+            var content = new AnalyzeDocumentContent() { UrlSource = uri };
+
+            Operation<AnalyzeResult> operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", content);
+            return ConvertResult(operation.Value);
+        }
+
+        public async Task<DocumentAnalysisResult> AnalyzeDocumentAsync(Stream imageStream)
+        {
+            byte[] byteArray;
+            using (var memoryStream = new MemoryStream())
+            {
+                await imageStream.CopyToAsync(memoryStream);
+                byteArray = memoryStream.ToArray();
+            }
+
+            BinaryData data = new(byteArray);
+            var content = new AnalyzeDocumentContent() { Base64Source = data };
+            Operation<AnalyzeResult> operation = await _client.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-layout", content);
+            return ConvertResult(operation.Value);
         }
     }
 }

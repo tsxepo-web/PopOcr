@@ -11,5 +11,8 @@ namespace PopOcr.Core.Interfaces
     {
        Task<DocumentAnalysisResult> AnalyseDocumentAsync(string uriSource);
         Task<DocumentAnalysisResult> AnalyzeDocumentAsync(Stream imageStream);
+        Task<byte[]> SaveExtractedTextToWordAsync(string extractedText);
+        Task<byte[]> SaveTablesToExcelAsync(List<List<string>> tables);
+
     }
 }

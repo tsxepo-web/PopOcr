@@ -26,8 +26,23 @@ if (string.IsNullOrEmpty(cvEndpoint) || string.IsNullOrEmpty(cvKey))
 }
 
 builder.Services.AddScoped<IOcrService>(sp => new OcrService(cvEndpoint, cvKey));
-builder.Services.AddScoped<IDocumentAnalysisService>(sp => new DocumentAnalysisService(endpoint, apiKey));
+//builder.Services.AddScoped<IDocumentAnalysisService>(sp => new DocumentAnalysisService(endpoint, apiKey));
 builder.Services.AddScoped<IReceiptAnalysisService>(sp => new ReceiptAnalysisService(endpoint, apiKey));
+builder.Services.AddScoped<IFileGenerationService>(sp => new FileGenarationService());
+
+builder.Services.AddScoped<IDocumentAnalysisService>(provider =>
+{
+    var fileGenarationService = provider.GetRequiredService<IFileGenerationService>();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var endpoint = configuration["PopOcr:Azure_Endpoint"];
+    var apiKey = configuration["PopOcr:Azure_ApiKey"];
+    if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
+    {
+        throw new InvalidOperationException("Azure Cognitive Services endpoint and APIKey must be set.");
+    }
+
+    return new DocumentAnalysisService(endpoint, apiKey, fileGenarationService);
+});
 
 var app = builder.Build();
 
