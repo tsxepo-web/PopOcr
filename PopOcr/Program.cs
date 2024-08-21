@@ -3,7 +3,8 @@ using PopOcr.Core.Interfaces;
 using PopOcr.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -25,9 +26,6 @@ if (string.IsNullOrEmpty(cvEndpoint) || string.IsNullOrEmpty(cvKey))
     throw new InvalidOperationException("Azure Computer Vision endpoint and API key must be set.");
 }
 
-builder.Services.AddScoped<IOcrService>(sp => new OcrService(cvEndpoint, cvKey));
-//builder.Services.AddScoped<IDocumentAnalysisService>(sp => new DocumentAnalysisService(endpoint, apiKey));
-builder.Services.AddScoped<IReceiptAnalysisService>(sp => new ReceiptAnalysisService(endpoint, apiKey));
 builder.Services.AddScoped<IFileGenerationService>(sp => new FileGenarationService());
 
 builder.Services.AddScoped<IDocumentAnalysisService>(provider =>
